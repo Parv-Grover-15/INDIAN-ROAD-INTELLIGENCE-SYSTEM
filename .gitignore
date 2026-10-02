@@ -1,0 +1,31 @@
+# Python Cache & Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Temporary Data & Scratch Files
+scratch/
+temp/
+*.tmp
+
+# Temp Video Exports & Uploads
+analyzed_*.mp4
+temp_*.mp4
+*.log
+
+# IDE & System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Agent Logs & System Cache
+.system_generated/
+.gemini/

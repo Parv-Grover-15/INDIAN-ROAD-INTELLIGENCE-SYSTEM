@@ -208,6 +208,8 @@ if 'reset_key' not in st.session_state:
     st.session_state['reset_key'] = 0
 if 'video_result' not in st.session_state:
     st.session_state['video_result'] = None
+if 'live_camera_running' not in st.session_state:
+    st.session_state['live_camera_running'] = False
 
 # Initialize Models ONCE
 @st.cache_resource(show_spinner="Loading ROAD//IQ Engine & Model Adapters...")
@@ -224,7 +226,7 @@ with st.sidebar:
 
     nav_option = st.radio(
         "NAVIGATION",
-        ["Overview", "Analyze Image", "Analyze Video", "History", "Model Status", "About Project", "GitHub / Sources"],
+        ["Overview", "Analyze Image", "Analyze Video", "🎥 Live Camera", "History", "Model Status", "About Project", "GitHub / Sources"],
         index=0,
         label_visibility="collapsed"
     )
@@ -245,6 +247,7 @@ with st.sidebar:
 def reset_analysis():
     st.session_state['reset_key'] += 1
     st.session_state['video_result'] = None
+    st.session_state['live_camera_running'] = False
     st.rerun()
 
 # Header Section
@@ -252,7 +255,7 @@ col_head, col_btn = st.columns([4, 1])
 with col_head:
     st.markdown('<div class="header-tag">ROAD SCENE ANALYSIS</div>', unsafe_allow_html=True)
     st.markdown('<div class="header-title">Indian Road Intelligence</div>', unsafe_allow_html=True)
-    st.markdown('<div class="header-desc">Upload a road image or video. Detect traffic, road hazards, damages, and scene conditions.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="header-desc">Upload a road image/video or stream real-time camera feed to detect traffic, road hazards, damages, and scene conditions.</div>', unsafe_allow_html=True)
 with col_btn:
     st.markdown("<br>", unsafe_allow_html=True)
     st.button("＋ New analysis", on_click=reset_analysis, use_container_width=True)
@@ -262,7 +265,6 @@ with col_btn:
 # -------------------------------------------------------------------
 if nav_option in ["Overview", "Analyze Image"]:
     
-    # Drag & Drop Uploader Container
     uploaded_file = st.file_uploader(
         "Upload Image",
         type=["jpg", "jpeg", "png"],
@@ -279,12 +281,12 @@ if nav_option in ["Overview", "Analyze Image"]:
                     <div class="uploader-sub">JPG, PNG, MP4 or MOV · up to 200 MB</div>
                 </div>
                 <div style="text-align: right; color: #666; font-size: 0.8rem; font-weight: 600;">
-                    IMAGE / VIDEO<br><span style="color: #999;">Analysis starts after upload</span>
+                    IMAGE / VIDEO / LIVE<br><span style="color: #999;">Analysis starts after upload</span>
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
-        st.info("👆 Upload an image above to display the analysis preview and hazard metrics.")
+        st.info("👆 Upload an image above or select '🎥 Live Camera' in the sidebar for continuous real-time webcam analysis.")
 
     else:
         file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
@@ -446,7 +448,6 @@ elif nav_option == "Analyze Video":
                     frame_stride=2
                 )
                 
-                # Read output video bytes into memory for persistent display & download
                 with open(res_path, "rb") as vf:
                     video_bytes = vf.read()
 
@@ -456,7 +457,6 @@ elif nav_option == "Analyze Video":
                     "report": video_report
                 }
 
-        # Render Video Results if present in session state
         if st.session_state['video_result'] is not None:
             v_res = st.session_state['video_result']
             video_bytes = v_res["video_bytes"]
@@ -522,7 +522,117 @@ elif nav_option == "Analyze Video":
         except Exception: pass
 
 # -------------------------------------------------------------------
-# VIEW 3: HISTORY
+# VIEW 3: LIVE CAMERA STREAM (Continuous Real-Time Feed)
+# -------------------------------------------------------------------
+elif nav_option == "🎥 Live Camera":
+    st.subheader("🎥 Real-Time Live Camera Stream")
+    st.caption("Streams live camera feed continuously, performing instant neural detection and hazard scoring on every frame.")
+
+    cam_ctrl_col1, cam_ctrl_col2 = st.columns([1, 1])
+    
+    with cam_ctrl_col1:
+        if not st.session_state['live_camera_running']:
+            if st.button("🔴 START REAL-TIME LIVE FEED", type="primary", use_container_width=True):
+                st.session_state['live_camera_running'] = True
+                st.rerun()
+        else:
+            if st.button("⏹️ STOP LIVE FEED", use_container_width=True):
+                st.session_state['live_camera_running'] = False
+                st.rerun()
+
+    with cam_ctrl_col2:
+        camera_source = st.selectbox("Select Camera Device Index:", [0, 1, 2], index=0)
+
+    st.markdown("---")
+
+    # Continuous Real-Time Live Feed Execution
+    if st.session_state['live_camera_running']:
+        cap = cv2.VideoCapture(camera_source)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+        if not cap.isOpened():
+            st.error(f"Cannot access camera index {camera_source}. Please verify camera device connection or select a different index.")
+            st.session_state['live_camera_running'] = False
+        else:
+            grid_left, grid_right = st.columns([1.8, 1])
+            
+            with grid_left:
+                st.markdown('<div class="card-label">LIVE CAMERA FEED</div>', unsafe_allow_html=True)
+                frame_placeholder = st.empty()
+                
+            with grid_right:
+                st.markdown('<div class="card-label">REAL-TIME HAZARD INDICATOR</div>', unsafe_allow_html=True)
+                metrics_placeholder = st.empty()
+
+            try:
+                while st.session_state['live_camera_running']:
+                    ret, frame = cap.read()
+                    if not ret:
+                        st.warning("Camera stream disconnected.")
+                        break
+
+                    # Execute neural pipeline on live frame
+                    annotated_bgr, live_report = image_pipeline.process(frame, source_name="live_camera_stream")
+                    annotated_rgb = cv2.cvtColor(annotated_bgr, cv2.COLOR_BGR2RGB)
+
+                    # Update live frame
+                    frame_placeholder.image(annotated_rgb, use_container_width=True)
+
+                    # Update live hazard score & detection summary
+                    l_summary = live_report.get("summary", {})
+                    l_score = l_summary.get("road_hazard_indicator", 0)
+                    l_rating = l_summary.get("hazard_rating", "LOW")
+                    risk_class = f"risk-{l_rating.lower().replace(' ', '-')}"
+
+                    counts = live_report.get("counts_breakdown", {}).get("road_users", {})
+                    cars_cnt = counts.get("car", 0)
+                    moto_cnt = counts.get("motorcycle", 0)
+                    people_cnt = counts.get("person", 0) + counts.get("pedestrian", 0)
+                    heavy_cnt = counts.get("bus", 0) + counts.get("truck", 0)
+
+                    metrics_placeholder.markdown(f"""
+                    <div>
+                        <div class="content-card">
+                            <div class="hazard-score-text">{l_score} <span class="hazard-denom">/ 100</span></div>
+                            <div class="risk-badge {risk_class}">● {l_rating} CURRENT RISK</div>
+                            <div style="background-color: #2a2b30; border-radius: 4px; height: 8px; width: 100%; margin-bottom: 0.8rem;">
+                                <div style="background-color: #f59e0b; height: 8px; border-radius: 4px; width: {l_score}%;"></div>
+                            </div>
+                            <div style="font-size: 0.75rem; color: #8a8d93;">Real-time stream inference active</div>
+                        </div>
+
+                        <div class="card-label">LIVE COUNTS</div>
+                        <div class="content-card">
+                            <div class="summary-row">
+                                <span class="summary-name">Cars</span>
+                                <span class="summary-val">{cars_cnt:02d}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-name">Motorcycles</span>
+                                <span class="summary-val">{moto_cnt:02d}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-name">People</span>
+                                <span class="summary-val">{people_cnt:02d}</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="summary-name">Bus / Truck</span>
+                                <span class="summary-val">{heavy_cnt:02d}</span>
+                            </div>
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                    time.sleep(0.01)
+
+            finally:
+                cap.release()
+    else:
+        st.info("Click **🔴 START REAL-TIME LIVE FEED** above to begin streaming from your webcam.")
+
+# -------------------------------------------------------------------
+# VIEW 4: HISTORY
 # -------------------------------------------------------------------
 elif nav_option == "History":
     st.subheader("📋 Session Analysis History")
@@ -547,7 +657,7 @@ elif nav_option == "History":
             """, unsafe_allow_html=True)
 
 # -------------------------------------------------------------------
-# VIEW 4: MODEL STATUS
+# VIEW 5: MODEL STATUS
 # -------------------------------------------------------------------
 elif nav_option == "Model Status":
     st.subheader("⚙️ Neural Component & Model Status")
@@ -567,7 +677,7 @@ elif nav_option == "Model Status":
             """, unsafe_allow_html=True)
 
 # -------------------------------------------------------------------
-# VIEW 5: ABOUT PROJECT
+# VIEW 6: ABOUT PROJECT
 # -------------------------------------------------------------------
 elif nav_option == "About Project":
     st.subheader("ℹ️ About Indian Road Intelligence System")
@@ -580,10 +690,11 @@ elif nav_option == "About Project":
     - **Drivable Area Segmentation:** Pixel-level U-Net segmentation trained on IIIT Hyderabad Indian Driving Dataset (IDD).
     - **Spatial Risk & Proximity Engine:** Computes risk interaction vectors between hazards and vulnerable road users.
     - **Road Hazard Indicator (0–100):** Transparent engineering heuristic score evaluating real-time road risk.
+    - **Continuous Real-Time Live Feed:** Instantaneous webcam stream monitoring & hazard evaluation.
     """)
 
 # -------------------------------------------------------------------
-# VIEW 6: GITHUB / SOURCES
+# VIEW 7: GITHUB / SOURCES
 # -------------------------------------------------------------------
 elif nav_option == "GitHub / Sources":
     st.subheader("🔗 GitHub Repositories & Source Attribution")
