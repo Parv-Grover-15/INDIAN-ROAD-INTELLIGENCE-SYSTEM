@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROAD//IQ - Indian Road Intelligence System | Executive Presentation</title>
+<style>
+  :root {
+    --bg-dark: #0f172a;
+    --card-bg: #1e293b;
+    --border-color: #334155;
+    --accent-orange: #f59e0b;
+    --accent-green: #10b981;
+    --accent-blue: #38bdf8;
+    --text-light: #f8fafc;
+    --text-muted: #94a3b8;
+  }
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* Presentation Container */
+  .deck-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .slide {
+    position: absolute;
+    width: 90%;
+    max-width: 1200px;
+    height: 85vh;
+    max-height: 720px;
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 3rem 3.5rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.95) translateY(20px);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .slide.active {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1) translateY(0);
+  }
+
+  /* Header */
+  .slide-tag {
+    color: var(--accent-orange);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .slide-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+  }
+
+  /* Grid Layouts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; flex: 1; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; flex: 1; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 1.2rem; flex: 1; }
+
+  /* Feature Cards */
+  .card {
+    background-color: rgba(30, 41, 59, 0.7);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-orange);
+  }
+
+  .card-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-light);
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .card-bullet {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 0.6rem;
+    list-style: none;
+    position: relative;
+    padding-left: 1.2rem;
+  }
+  .card-bullet::before {
+    content: "•";
+    color: var(--accent-orange);
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+  }
+
+  /* Large Stat Displays */
+  .stat-big {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--accent-orange);
+    line-height: 1;
+  }
+
+  .code-badge {
+    background-color: #0f172a;
+    color: var(--accent-blue);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85rem;
+  }
+
+  /* Navigation Bar */
+  .nav-bar {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background-color: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--border-color);
+    padding: 0.6rem 1.5rem;
+    border-radius: 30px;
+    backdrop-filter: blur(8px);
+    z-index: 100;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+  }
+  .nav-btn:hover { background-color: var(--card-bg); color: var(--accent-orange); }
+
+  .slide-counter {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<div class="deck-container">
+
+  <!-- SLIDE 1: Title Slide -->
+  <div class="slide active" id="slide-1">
+    <div style="margin-auto: 0;">
+      <div class="slide-tag">FINAL YEAR CAPSTONE PRESENTATION</div>
+      <h1 style="font-size: 3.8rem; font-weight: 900; color: #fff; margin-top: 0.5rem;">ROAD<span style="color: var(--accent-orange);">//IQ</span></h1>
+      <h2 style="font-size: 2.2rem; font-weight: 700; color: var(--text-light); margin-bottom: 1.5rem;">INDIAN ROAD INTELLIGENCE SYSTEM</h2>
+      <p style="font-size: 1.15rem; color: var(--text-muted); max-width: 800px; line-height: 1.6;">
+        An Integrated Multi-Model Computer Vision Platform for Real-Time Traffic Detection, Road Damage Assessment, and Contextual Safety Hazard Indicator Scoring.
+      </p>
+    </div>
+    
+    <div style="display: flex; gap: 2rem; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+      <div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">ARCHITECTURE</div>
+        <div style="font-weight: 700; color: var(--accent-green);">Decoupled Adapters</div>
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">MODELS INTEGRATED</div>
+        <div style="font-weight: 700; color: var(--accent-orange);">5 Computer Vision Pipelines</div>
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">HAZARD SCORING</div>
+        <div style="font-weight: 700; color: var(--accent-blue);">0–100 Engineering Heuristic</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: Problem Statement & Why AI -->
+  <div class="slide" id="slide-2">
+    <div>
+      <div class="slide-tag">THE CHALLENGE</div>
+      <h2 class="slide-title">Problem Statement & Motivation</h2>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-orange);">🚨 Unstructured Traffic</div>
+        <div class="card-bullet">Extreme vehicle heterogeneity (auto-rickshaws, bikes, buses, trucks, pedestrians).</div>
+        <div class="card-bullet">Lack of lane markings makes classical edge/line detection fail completely.</div>
+        <div class="card-bullet">High occlusion and scale diversity across urban & rural roads.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-orange);">⚠️ Severe Road Hazards</div>
+        <div class="card-bullet">Unmonitored potholes and structural cracks cause thousands of accidents annually.</div>
+        <div class="card-bullet">Manual road inspection is slow, expensive, and fails to scale.</div>
+        <div class="card-bullet">Delay in detection accelerates severe pavement degradation.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-green);">💡 Our AI Solution</div>
+        <div class="card-bullet">Unified multi-model pipeline combining detection, segmentation, and severity grading.</div>
+        <div class="card-bullet">Automated Euclidean spatial proximity hazard vector calculation.</div>
+        <div class="card-bullet">Single-loading image & video analytics dashboard with instant JSON reports.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: System Architecture -->
+  <div class="slide" id="slide-3">
+    <div>
+      <div class="slide-tag">SYSTEM ARCHITECTURE</div>
+      <h2 class="slide-title">Decoupled Adapter Framework</h2>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-orange);">🏗️ Architectural Design Principles</div>
+        <div class="card-bullet"><strong>Decoupled Model Adapters:</strong> Insulates third-party repository code from application logic via <span class="code-badge">BaseModelAdapter</span> contract.</div>
+        <div class="card-bullet"><strong>Graceful Degradation:</strong> Missing model weights bypass gracefully without interrupting active components.</div>
+        <div class="card-bullet"><strong>Single-Load Model Persistence:</strong> Models load <em>EXACTLY ONCE</em> upon initialization to preserve video FPS.</div>
+        <div class="card-bullet"><strong>Normalized Contract:</strong> Standardizes bounding boxes, confidence, and mask shapes across models.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-green);">🧩 Integrated Model Stack</div>
+        <div class="card-bullet"><strong>1. Generic Objects:</strong> YOLOv8 (COCO) → Cars, Motorcycles, Buses, Trucks, Pedestrians.</div>
+        <div class="card-bullet"><strong>2. Road Damage:</strong> RoadScanCV YOLO → Potholes, Cracks, Manholes.</div>
+        <div class="card-bullet"><strong>3. Drivable Area:</strong> IDD ResNet50 U-Net → Binary drivable surface mask.</div>
+        <div class="card-bullet"><strong>4. Pothole Severity:</strong> iWatchRoad Heuristic → Area-based Low/Mod/High severity.</div>
+        <div class="card-bullet"><strong>5. Traffic Signs:</strong> YOLOv8s → 56 Indian sign categories (Optional).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: Contextual Analysis & Hazard Indicator -->
+  <div class="slide" id="slide-4">
+    <div>
+      <div class="slide-tag">ANALYSIS ENGINE</div>
+      <h2 class="slide-title">Spatial Risk & Road Hazard Indicator (0–100)</h2>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-orange);">🎯 Spatial Proximity Risk Engine</div>
+        <div class="card-bullet">Computes Euclidean distance between road user centers and hazard bounding boxes.</div>
+        <div class="card-bullet"><span class="code-badge">CRITICAL</span> alert triggered when distance &lt; 75px between vulnerable users (pedestrians) and severe potholes.</div>
+        <div class="card-bullet">Renders visual interaction risk lines directly on the output frame.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-green);">📊 Hazard Score Formula (0–100)</div>
+        <div class="card-bullet"><strong>Potholes:</strong> High (+15), Mod (+8), Low (+3).</div>
+        <div class="card-bullet"><strong>Road Users:</strong> Pedestrians (+7), Vehicles (+2).</div>
+        <div class="card-bullet"><strong>Proximity Penalty:</strong> +10 per critical hazard interaction.</div>
+        <div style="margin-top: 1rem; padding: 0.8rem; background: rgba(15,23,42,0.8); border-radius: 8px;">
+          <div style="font-weight: 700; color: var(--accent-orange);">Categorical Scale:</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+            🟢 0–24: LOW | 🟡 25–54: MODERATE | 🟠 55–79: HIGH | 🔴 80–100: VERY HIGH
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: ROAD//IQ Web UI -->
+  <div class="slide" id="slide-5">
+    <div>
+      <div class="slide-tag">FRONTEND DASHBOARD</div>
+      <h2 class="slide-title">ROAD//IQ Interactive Capabilities</h2>
+    </div>
+    <div class="grid-4">
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-orange);">📷 & 🎥 Pipelines</div>
+        <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">
+          Upload images or video clips. Frame-by-frame processing preserves FPS and aspect ratio.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-green);">🎨 Visual HUD Overlay</div>
+        <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">
+          Displays transparent drivable area masks, severity badges, risk vectors, and HUD score banners.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-green);">📜 Session History</div>
+        <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">
+          Tracks session runs in <span class="code-badge">st.session_state</span> with timestamped scores and object counts.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-orange);">📥 1-Click JSON Export</div>
+        <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">
+          Download complete technical JSON analysis reports detailing objects, hazard metrics, and model statuses.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: Verification Results & Roadmap -->
+  <div class="slide" id="slide-6">
+    <div>
+      <div class="slide-tag">VERIFICATION & ROADMAP</div>
+      <h2 class="slide-title">Testing Results & Future Expansion</h2>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-green);">✅ Verification Status</div>
+        <div class="card-bullet"><strong>Generic Object Detector:</strong> <span style="color: var(--accent-green); font-weight: 700;">PASS</span> (yolov8n.pt active).</div>
+        <div class="card-bullet"><strong>Pothole Severity Logic:</strong> <span style="color: var(--accent-green); font-weight: 700;">PASS</span> (iWatchRoad area logic active).</div>
+        <div class="card-bullet"><strong>Pipelines & UI Dashboard:</strong> <span style="color: var(--accent-green); font-weight: 700;">PASS</span> (Full flow verified).</div>
+        <div class="card-bullet"><strong>Custom Weight Blockers:</strong> Gracefully disabled until `.pt` files placed in <span class="code-badge">weights/</span>.</div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color: var(--accent-orange);">🚀 Future Scope</div>
+        <div class="card-bullet"><strong>Weight Fine-Tuning:</strong> Deploy custom trained IDD U-Net & RoadScanCV checkpoints.</div>
+        <div class="card-bullet"><strong>Vehicle Tracking:</strong> Integrate ByteTrack / DeepSORT for frame-to-frame velocity tracking.</div>
+        <div class="card-bullet"><strong>GIS Portal Integration:</strong> Export pothole GPS coordinates directly to road authority repair queues.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Navigation Controls -->
+<div class="nav-bar">
+  <button class="nav-btn" onclick="prevSlide()">❮</button>
+  <div class="slide-counter" id="counter">Slide 1 / 6</div>
+  <button class="nav-btn" onclick="nextSlide()">❯</button>
+</div>
+
+<script>
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('counter');
+
+  function updateSlide() {
+    slides.forEach((s, idx) => {
+      s.classList.toggle('active', idx === currentSlide);
+    });
+    counter.innerText = `Slide ${currentSlide + 1} / ${slides.length}`;
+  }
+
+  function nextSlide() {
+    if (currentSlide < slides.length - 1) {
+      currentSlide++;
+      updateSlide();
+    }
+  }
+
+  function prevSlide() {
+    if (currentSlide > 0) {
+      currentSlide--;
+      updateSlide();
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+    if (e.key === 'ArrowLeft') prevSlide();
+  });
+</script>
+
+</body>
+</html>
