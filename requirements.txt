@@ -1,0 +1,26 @@
+# Indian Road Intelligence System (ROAD//IQ) Dependencies
+
+# Deep Learning Framework
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Neural Model Engines & Segmentation
+ultralytics>=8.0.0
+segmentation-models-pytorch>=0.3.0
+
+# Image & Video Computer Vision Processing
+opencv-python>=4.8.0
+numpy>=1.24.0
+pandas>=2.0.0
+Pillow>=10.0.0
+PyYAML>=6.0
+
+# Web Video Encoding & Playback (H.264 MP4)
+imageio>=2.30.0
+imageio-ffmpeg>=0.4.8
+
+# Interactive UI Dashboard
+streamlit>=1.28.0
+
+# Presentation Generator
+python-pptx>=1.0.0
