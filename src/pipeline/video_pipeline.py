@@ -106,6 +106,8 @@ class VideoPipeline:
                 processed_frames_count += 1
 
             frame_index += 1
+            if frame_index % 50 == 0:
+                print(f"[VideoPipeline] Processing frame {frame_index}/{total_frames}...")
 
         cap.release()
         if use_imageio:

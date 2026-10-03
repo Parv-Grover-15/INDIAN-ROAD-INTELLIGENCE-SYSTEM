@@ -29,3 +29,7 @@ Thumbs.db
 # Agent Logs & System Cache
 .system_generated/
 .gemini/
+
+# Personal Study & Viva Reference Guides (Private)
+docs/PROJECT_EXPLANATION_GUIDE.md
+docs/PROJECT_TEXTBOOK.md

@@ -53,12 +53,22 @@ class ImagePipeline:
         """
         h, w = image.shape[:2]
 
+        # --- Performance: Resize for inference, render on original ---
+        INFER_MAX = 640
+        scale = min(INFER_MAX / w, INFER_MAX / h, 1.0)  # Never upscale
+        if scale < 1.0:
+            infer_w, infer_h = int(w * scale), int(h * scale)
+            infer_frame = cv2.resize(image, (infer_w, infer_h), interpolation=cv2.INTER_LINEAR)
+        else:
+            infer_frame = image
+            scale = 1.0
+
         # 1. Generic Object Detection (COCO)
         objects = []
         if self.object_detector.is_loaded:
             try:
-                res = self.object_detector.predict(image)
-                objects = res.get("detections", [])
+                res = self.object_detector.predict(infer_frame)
+                objects = self._scale_detections(res.get("detections", []), scale)
             except Exception as e:
                 print(f"[WARN] Generic Object Detection failed: {e}")
 
@@ -66,8 +76,8 @@ class ImagePipeline:
         damages = []
         if self.road_damage_detector.is_loaded:
             try:
-                res = self.road_damage_detector.predict(image)
-                damages = res.get("detections", [])
+                res = self.road_damage_detector.predict(infer_frame)
+                damages = self._scale_detections(res.get("detections", []), scale)
             except Exception as e:
                 print(f"[WARN] Road Damage Detection failed: {e}")
 
@@ -86,9 +96,9 @@ class ImagePipeline:
 
         if self.road_segmenter.is_loaded:
             try:
-                res = self.road_segmenter.predict(image)
-                drivable_pct = res.get("drivable_area_percentage", 100.0)
-                seg_info = res
+                res = self.road_segmenter.predict(infer_frame)
+                seg_mask = res.get("seg_mask")  # Binary mask (H×W uint8); None if segmenter not loaded
+                seg_info = {k: v for k, v in res.items() if k != "seg_mask"}
             except Exception as e:
                 print(f"[WARN] Road Segmentation failed: {e}")
 
@@ -96,8 +106,8 @@ class ImagePipeline:
         traffic_signs = []
         if self.traffic_sign_detector.is_loaded:
             try:
-                res = self.traffic_sign_detector.predict(image)
-                traffic_signs = res.get("detections", [])
+                res = self.traffic_sign_detector.predict(infer_frame)
+                traffic_signs = self._scale_detections(res.get("detections", []), scale)
             except Exception as e:
                 print(f"[WARN] Traffic Sign Detection failed: {e}")
 
@@ -137,3 +147,21 @@ class ImagePipeline:
         )
 
         return annotated_frame, json_report
+
+    def _scale_detections(self, detections: list, scale: float) -> list:
+        """Scales bounding box coordinates back to original image resolution.
+
+        Args:
+            detections: List of detection dicts, each with a 'bbox' key ([x1,y1,x2,y2]).
+            scale: The ratio used to downscale the frame before inference (e.g. 0.5).
+                   Pass 1.0 to return the list unchanged.
+
+        Returns:
+            The same list with bbox coordinates multiplied by 1/scale in-place.
+        """
+        if scale == 1.0:
+            return detections
+        inv = 1.0 / scale
+        for det in detections:
+            det['bbox'] = [c * inv for c in det['bbox']]
+        return detections

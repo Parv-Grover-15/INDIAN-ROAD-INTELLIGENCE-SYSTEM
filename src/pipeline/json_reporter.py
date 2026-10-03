@@ -41,7 +41,7 @@ class JSONReporter:
             lbl = dmg.get("label", "unknown")
             damage_counts[lbl] = damage_counts.get(lbl, 0) + 1
 
-        return {
+        report = {
             "project": "Indian Road Intelligence System",
             "source_media": source_name,
             "media_type": media_type,
@@ -67,3 +67,17 @@ class JSONReporter:
                 "traffic_signs": traffic_signs
             }
         }
+        return self._make_serializable(report)
+
+    def _make_serializable(self, obj: Any) -> Any:
+        if isinstance(obj, dict):
+            return {k: self._make_serializable(v) for k, v in obj.items() if k != "seg_mask"}
+        elif isinstance(obj, list):
+            return [self._make_serializable(v) for v in obj]
+        elif isinstance(obj, tuple):
+            return [self._make_serializable(v) for v in obj]
+        elif hasattr(obj, "item") and callable(getattr(obj, "item")):
+            return obj.item()
+        elif hasattr(obj, "tolist") and callable(getattr(obj, "tolist")):
+            return obj.tolist()
+        return obj
